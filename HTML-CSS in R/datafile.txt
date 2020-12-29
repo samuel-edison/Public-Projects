@@ -1,0 +1,19 @@
+""	"Manufacturer"	"STD"	"CAFE"	"CAFE_STD"
+"1"	"BMW"	NA	NA	NA
+"2"	"Daimler"	NA	NA	NA
+"3"	"Fiat Chrysler*"	32.9	31.1	-1.8
+"4"	"Ford"	34	36.6	2.6
+"5"	"GM"	33.9	34.4	0.5
+"6"	"Honda"	33.8	39.2	5.4
+"7"	"Hyundai"	NA	NA	NA
+"8"	"Jaguar Land Rover"	NA	NA	NA
+"9"	"Kia"	NA	NA	NA
+"10"	"Lotus"	NA	NA	NA
+"11"	"Mazda"	NA	NA	NA
+"12"	"Mitsubishi"	NA	NA	NA
+"13"	"Nissan"	34.7	41.9	7.2
+"14"	"Subaru"	NA	NA	NA
+"15"	"Tesla"	32.1	276.7	244.6
+"16"	"Toyota"	34.4	39.1	4.7
+"17"	"Volvo"	NA	NA	NA
+"18"	"VW*"	33.6	37.7	4.1
