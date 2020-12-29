@@ -1,0 +1,287 @@
+#load libraries
+library(haven)
+library(fUnitRoots)
+library(lmtest)
+library(FitAR)
+library(forecast)
+library(tseries)
+
+#set wd
+setwd("D://School//Business Analytics - Dr. C//BAN 5753//Module 13 ~ 14 - Time Series//Advanced (14)//Exercise 14")
+#readin file
+df=read_sas('saledata.sas7bdat')
+df2=read_sas('solarpv.sas7bdat')
+names(df)
+#subset data for target
+saledata_prod = subset(df,select = c("SalesAmount"))
+#convert Data to time format
+df$Date = as.Date(df$Date, origin="1970-01-01")
+df2$EDT = as.Date(df2$EDT, origin="1970-01-01")
+print(head(df$Date,5))
+#convert to timeseries data with origin as 1997-09-28 with 7 day interval
+saledata_prod = ts(saledata_prod,frequency=7, start = c(1997-09-28))
+#plot the trend with a mean line
+plot(saledata_prod)
+abline(reg=lm(saledata_prod~time(saledata_prod)))
+#calculate ACF
+acf(saledata_prod)
+#calculate PACF
+pacf(saledata_prod)
+
+#Ljung Chi Square test to check for White noise
+Box.test(saledata_prod, type="Ljung-Box")
+
+#================================================
+#AR1 MODEL
+#================================================
+
+#Create a ARIMA for AR1
+fitARIMA = arima(saledata_prod, order =c(1,0,0), method="ML")
+fitARIMA
+  #Check coefficient of ARIMA model
+coeftest(fitARIMA)
+  #perform ACF, PACF, Ljung Box test
+acf(fitARIMA$residuals)
+pacf(fitARIMA$residuals)
+Box.test(fitARIMA$residuals,type="Ljung-Box")
+qqnorm(fitARIMA$residuals)
+qqline(fitARIMA$residuals)
+arima_bic=AIC(fitARIMA,k=log(length(saledata_prod)))
+print(arima_bic)
+
+#Forecast the next 6 weeks based on first 78
+arima_fore = forecast(fitARIMA,h=6)
+accuracy(arima_fore)
+plot(fitARIMA)
+plot(arima_fore)
+
+#training and testing for time series using multiple time series
+training = subset(saledata_prod, end=length(saledata_prod)-12)
+test = subset(saledata_prod, start=length(saledata_prod)-11)
+
+saledata_prod_ts = Arima(training, order=c(1,0,0), method="ML")
+saledata_prod_ts %>%
+  forecast(h=6) %>%
+  autoplot() + autolayer(test)
+
+#check accuracy for AR1
+saledata_prod_ts_test = Arima(test,model=saledata_prod_ts)
+accuracy(saledata_prod_ts_test)
+
+#================================================
+#MA1 MODEL
+#================================================
+
+#Create a ARIMA for MA1
+fitARIMA = arima(saledata_prod, order =c(0,0,1), method="ML")
+fitARIMA
+#Check coefficient of ARIMA model
+coeftest(fitARIMA)
+#perform ACF, PACF, Ljung Box test
+acf(fitARIMA$residuals)
+pacf(fitARIMA$residuals)
+Box.test(fitARIMA$residuals,type="Ljung-Box")
+qqnorm(fitARIMA$residuals)
+qqline(fitARIMA$residuals)
+arima_bic=AIC(fitARIMA,k=log(length(saledata_prod)))
+print(arima_bic)
+
+#Forecast the next 6 weeks based on first 78
+arima_fore = forecast(fitARIMA,h=6)
+accuracy(arima_fore)
+plot(fitARIMA)
+plot(arima_fore)
+
+#training and testing for time series using multiple time series
+training = subset(saledata_prod, end=length(saledata_prod)-12)
+test = subset(saledata_prod, start=length(saledata_prod)-11)
+
+saledata_prod_ts = Arima(training, order=c(0,0,1), method="ML")
+saledata_prod_ts %>%
+  forecast(h=6) %>%
+  autoplot() + autolayer(test)
+
+#check accuracy for Model
+saledata_prod_ts_test = Arima(test,model=saledata_prod_ts)
+accuracy(saledata_prod_ts_test)
+
+
+#================================================
+#AR3 MODEL
+#================================================
+
+#Create a ARIMA for AR3
+fitARIMA = arima(saledata_prod, order =c(3,0,0), method="ML")
+fitARIMA
+#Check coefficient of ARIMA model
+coeftest(fitARIMA)
+#perform ACF, PACF, Ljung Box test
+acf(fitARIMA$residuals)
+pacf(fitARIMA$residuals)
+Box.test(fitARIMA$residuals,type="Ljung-Box")
+qqnorm(fitARIMA$residuals)
+qqline(fitARIMA$residuals)
+arima_bic=AIC(fitARIMA,k=log(length(saledata_prod)))
+print(arima_bic)
+
+#Forecast the next 6 weeks based on first 78
+arima_fore = forecast(fitARIMA,h=6)
+accuracy(arima_fore)
+plot(fitARIMA)
+plot(arima_fore)
+
+#training and testing for time series using multiple time series
+training = subset(saledata_prod, end=length(saledata_prod)-12)
+test = subset(saledata_prod, start=length(saledata_prod)-11)
+
+saledata_prod_ts = Arima(training, order=c(3,0,0), method="ML")
+saledata_prod_ts %>%
+  forecast(h=6) %>%
+  autoplot() + autolayer(test)
+
+#check accuracy for Model
+saledata_prod_ts_test = Arima(test,model=saledata_prod_ts)
+accuracy(saledata_prod_ts_test)
+
+
+#================================================
+#ARMA(1,1) MODEL
+#================================================
+
+#Create a ARIMA for AR3
+fitARIMA = arima(saledata_prod, order =c(1,0,1), method="ML")
+fitARIMA
+#Check coefficient of ARIMA model
+coeftest(fitARIMA)
+#perform ACF, PACF, Ljung Box test
+acf(fitARIMA$residuals)
+pacf(fitARIMA$residuals)
+Box.test(fitARIMA$residuals,type="Ljung-Box")
+qqnorm(fitARIMA$residuals)
+qqline(fitARIMA$residuals)
+arima_bic=AIC(fitARIMA,k=log(length(saledata_prod)))
+print(arima_bic)
+
+#Forecast the next 6 weeks based on first 78
+arima_fore = forecast(fitARIMA,h=6)
+accuracy(arima_fore)
+plot(fitARIMA)
+plot(arima_fore)
+
+#training and testing for time series using multiple time series
+training = subset(saledata_prod, end=length(saledata_prod)-12)
+test = subset(saledata_prod, start=length(saledata_prod)-11)
+
+saledata_prod_ts = Arima(training, order=c(1,0,1), method="ML")
+saledata_prod_ts %>%
+  forecast(h=6) %>%
+  autoplot() + autolayer(test)
+
+#check accuracy for Model
+saledata_prod_ts_test = Arima(test,model=saledata_prod_ts)
+accuracy(saledata_prod_ts_test)
+
+
+
+
+#================================================
+#ARMA(3,3) MODEL
+#================================================
+
+#Create a ARIMA for AR3
+fitARIMA = arima(saledata_prod, order =c(3,0,3), method="ML")
+fitARIMA
+#Check coefficient of ARIMA model
+coeftest(fitARIMA)
+#perform ACF, PACF, Ljung Box test
+acf(fitARIMA$residuals)
+pacf(fitARIMA$residuals)
+Box.test(fitARIMA$residuals,type="Ljung-Box")
+qqnorm(fitARIMA$residuals)
+qqline(fitARIMA$residuals)
+arima_bic=AIC(fitARIMA,k=log(length(saledata_prod)))
+print(arima_bic)
+
+#Forecast the next 6 weeks based on first 78
+arima_fore = forecast(fitARIMA,h=6)
+accuracy(arima_fore)
+plot(fitARIMA)
+plot(arima_fore)
+
+#training and testing for time series using multiple time series
+training = subset(saledata_prod, end=length(saledata_prod)-12)
+test = subset(saledata_prod, start=length(saledata_prod)-11)
+
+saledata_prod_ts = Arima(training, order=c(3,0,3), method="ML")
+saledata_prod_ts %>%
+  forecast(h=6) %>%
+  autoplot() + autolayer(test)
+
+#check accuracy for Model
+saledata_prod_ts_test = Arima(test,model=saledata_prod_ts)
+accuracy(saledata_prod_ts_test)
+
+
+#================================================
+#ARIMAX(1) MODEL
+#================================================
+#dataframe for input variables
+ind_data=cbind('PrintMedia'=df$PrintMedia,'TVRadio'=df$TVRadio, 'Internet'=df$Internet)
+#create model
+fit_ARIMAx = Arima(saledata_prod,order=c(1,0,0),method="ML",xreg=ind_data)
+#print model results
+fit_ARIMAx
+summary(fit_ARIMAx)
+coeftest(fit_ARIMAx)
+#forecast next 6 weeks based on  prior 78
+arimax_fore = forecast(fit_ARIMAx,xreg = ind_data,h=6)
+accuracy(arimax_fore)
+plot(arimax_fore)
+#training and testing for time series using multiple time series
+#split the independent variable
+training = subset(saledata_prod, end=length(saledata_prod)-12)
+test = subset(saledata_prod, start=length(saledata_prod)-5)
+ind_train = head(ind_data,76)
+ind_test = tail(ind_data,6)
+
+saledata_prod_ts = Arima(training, order=c(1,0,0),method="ML",xreg=ind_train)
+saledata_prod_ts %>%
+  forecast(h=6,xreg=ind_test) %>%
+  autoplot() + autolayer(test)
+
+#Check the accuracy of the model on the test data
+saledata_prod_ts_test = Arima(test, model=saledata_prod_ts,xreg = ind_test)
+accuracy(saledata_prod_ts_test)
+
+
+
+#================================================
+#ARIMAX(1,1) MODEL
+#================================================
+#dataframe for input variables
+ind_data=cbind('PrintMedia'=df$PrintMedia,'TVRadio'=df$TVRadio, 'Internet'=df$Internet)
+#create model
+fit_ARIMAx = Arima(saledata_prod,order=c(1,0,1),method="ML",xreg=ind_data)
+#print model results
+fit_ARIMAx
+summary(fit_ARIMAx)
+coeftest(fit_ARIMAx)
+#forecast next 6 weeks based on  prior 78
+arimax_fore = forecast(fit_ARIMAx,xreg = ind_data,h=6)
+accuracy(arimax_fore)
+plot(arimax_fore)
+#training and testing for time series using multiple time series
+#split the independent variable
+training = subset(saledata_prod, end=length(saledata_prod)-12)
+test = subset(saledata_prod, start=length(saledata_prod)-5)
+ind_train = head(ind_data,76)
+ind_test = tail(ind_data,6)
+
+saledata_prod_ts = Arima(training, order=c(1,0,1),method="ML",xreg=ind_train)
+saledata_prod_ts %>%
+  forecast(h=6,xreg=ind_test) %>%
+  autoplot() + autolayer(test)
+
+#Check the accuracy of the model on the test data
+saledata_prod_ts_test = Arima(test, model=saledata_prod_ts,xreg = ind_test)
+accuracy(saledata_prod_ts_test)
