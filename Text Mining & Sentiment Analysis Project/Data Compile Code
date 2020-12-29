@@ -1,0 +1,443 @@
+#############################################
+#=============Read in Libraries=============#
+import pandas as pd
+import numpy as np
+from lxml import html
+from lxml import etree
+import requests
+import urllib3
+import twitter
+import regex
+import os
+import tweepy
+import datetime
+import sys
+
+# Code to show full column/row width as needed #
+################################################
+pd.set_option('display.max_columns', None)
+pd.set_option('display.max_rows', None)
+pd.set_option('display.max_colwidth', None)
+################################################
+#=============Print more Data=============#
+################################################
+
+#############################################
+#Create Regular Expressions to match specific references to Trump/Biden/Republican/Democrat for descriptive statistics. 
+#The same regex will be used across all data sources.
+Find_Trump = r"(Trump)|(President)"
+Find_Biden = r"(Biden)|(Vice President)"
+Find_Republican = r"(Republican)"
+Find_Democrat = r"(Democrat)|(Democratic)"
+#############################################
+
+
+###################################################################
+#Task 1: Gathering Data from News Media Websites (CNN and FOX NEWS)
+###################################################################
+
+#Task 1.1 Define Articles to be used for Analysis from CNN and Fox News
+#Gather all necessary URL and place into individual variables to prepare for web scraping
+#CNN Articles
+cnn_trump_article1 = "https://www.cnn.com/2020/10/23/politics/donald-trump-mar-a-lago-coronavirus/index.html"
+cnn_trump_article2 = "https://www.cnn.com/2020/10/23/politics/voter-reax-to-final-debate/index.html"
+cnn_trump_article3 = "https://www.cnn.com/2020/10/23/politics/trump-sudan-israel/index.html"
+cnn_biden_article1 = "https://www.cnn.com/2020/10/23/politics/biden-fracking-fact-check/index.html"
+cnn_biden_article2 = "https://www.cnn.com/2020/10/23/politics/biden-trump-cash-on-hand/index.html"
+cnn_biden_article3 = "https://www.cnn.com/2020/10/23/politics/trump-biden-final-2020-debate/index.html"
+CNN_article_df = pd.DataFrame({'Rows':[cnn_trump_article1,cnn_trump_article2,cnn_trump_article3,cnn_biden_article1,cnn_biden_article2,cnn_biden_article3]})
+CNN_article_index = CNN_article_df.index
+CNN_article_rows = len(CNN_article_index)
+print(CNN_article_rows)
+
+#Fox News Articles
+#first 6 on politics page under hottest topics
+foxnews_article1 = "https://www.foxnews.com/politics/trump-north-carolina-rally-jam-packed-saturday"
+foxnews_article2 = "https://www.foxnews.com/politics/netanyahu-skirts-trumps-condemnation-joe-biden"
+foxnews_article3 = "https://www.foxnews.com/politics/a-presidential-inauguration-amid-coronavirus-pandemic-what-the-event-could-look-like-come-january"
+foxnews_article4 = "https://www.foxnews.com/opinion/trump-supporters-jonathan-turley"
+foxnews_article5 = "https://www.foxnews.com/politics/biden-hunter-trump-crass-family"
+foxnews_article6 = "https://www.foxnews.com/us/john-daly-hung-with-kid-rock-at-debate-afterparty-trumps-like-me-and-jesus"
+#Compile counts for mentions data
+FOX_article_df = pd.DataFrame({'Rows':[foxnews_article1,foxnews_article2,foxnews_article3,foxnews_article4,foxnews_article5,foxnews_article6]})
+FOX_article_index = FOX_article_df.index
+FOX_article_rows = len(FOX_article_index)
+print(FOX_article_rows)
+
+###############################################
+#Task 1.2 Pull the data from the website and place into variables
+#These functions use the url's created in the variables above.
+httpmng = urllib3.PoolManager()
+#CNN
+resptrump1 = httpmng.request('GET', cnn_trump_article1)
+resptrump2 = httpmng.request('GET', cnn_trump_article2)
+resptrump3 = httpmng.request('GET', cnn_trump_article3)
+respbiden1 = httpmng.request('GET', cnn_biden_article1)
+respbiden2 = httpmng.request('GET', cnn_biden_article2)
+respbiden3 = httpmng.request('GET', cnn_biden_article3)
+
+#Fox News
+respfox1 = httpmng.request('GET', foxnews_article1)
+respfox2 = httpmng.request('GET', foxnews_article2)
+respfox3 = httpmng.request('GET', foxnews_article3)
+respfox4 = httpmng.request('GET', foxnews_article4)
+respfox5 = httpmng.request('GET', foxnews_article5)
+respfox6 = httpmng.request('GET', foxnews_article6)
+
+###############################################
+#Task 1.3 Gather tree structure and place into a variable. 
+#The tree structure is the html from each individual website.
+#CNN
+tagtree_trump1 = html.fromstring(resptrump1.data)
+tagtree_trump2 = html.fromstring(resptrump2.data)
+tagtree_trump3 = html.fromstring(resptrump3.data)
+tagtree_biden1 = html.fromstring(respbiden1.data)
+tagtree_biden2 = html.fromstring(respbiden2.data)
+tagtree_biden3 = html.fromstring(respbiden3.data)
+#Fox News
+#gather tree structure and place into a variable.
+tagtree_fox1 = html.fromstring(respfox1.data)
+tagtree_fox2 = html.fromstring(respfox2.data)
+tagtree_fox3 = html.fromstring(respfox3.data)
+tagtree_fox4 = html.fromstring(respfox4.data)
+tagtree_fox5 = html.fromstring(respfox5.data)
+tagtree_fox6 = html.fromstring(respfox6.data)
+
+###############################################
+#Task 1.4.1 Parse out the titles for CNN articles with XPATH. 
+#XPATH is code used on the HTML of the url's to extract precise text needed for analysis.
+xp_cnn_articles_title = "//article/div/h1/text()"
+
+#parse out the titles for CNN articles with XPATH
+xp_fox_articles_title = "//main/article/header/h1/text()"
+
+###############################################
+#Task 1.5.1 Convert the variables to string so Regular Expressions can be used.
+#CNN
+cnn_trumparticle1_title = str(tagtree_trump1.xpath(xp_cnn_articles_title))
+cnn_trumparticle2_title = str(tagtree_trump2.xpath(xp_cnn_articles_title))
+cnn_trumparticle3_title = str(tagtree_trump3.xpath(xp_cnn_articles_title))
+cnn_bidenarticle1_title = str(tagtree_biden1.xpath(xp_cnn_articles_title))
+cnn_bidenarticle2_title = str(tagtree_biden2.xpath(xp_cnn_articles_title))
+cnn_bidenarticle3_title = str(tagtree_biden3.xpath(xp_cnn_articles_title))
+
+#Fox News
+#convert the variables to string so Regular Expressions can be used.
+foxnews_article1_title = str(tagtree_fox1.xpath(xp_fox_articles_title))
+foxnews_article2_title = str(tagtree_fox2.xpath(xp_fox_articles_title))
+foxnews_article3_title = str(tagtree_fox3.xpath(xp_fox_articles_title))
+foxnews_article4_title = str(tagtree_fox4.xpath(xp_fox_articles_title))
+foxnews_article5_title = str(tagtree_fox5.xpath(xp_fox_articles_title))
+foxnews_article6_title = str(tagtree_fox6.xpath(xp_fox_articles_title))
+
+###############################################
+#Task 1.6.1 Combine the titles in preparation to perform a regex count of each defined category
+#CNN
+cnn_article_titles_combined = cnn_trumparticle1_title + cnn_trumparticle2_title + cnn_trumparticle3_title + cnn_bidenarticle1_title + cnn_bidenarticle2_title + cnn_bidenarticle3_title
+#type(cnn_trumparticle1_title) - example of how to see the data type of a data frame
+
+#Fox
+foxnews_article_titles_combined = foxnews_article1_title + foxnews_article2_title + foxnews_article3_title + foxnews_article4_title + foxnews_article5_title + foxnews_article6_title
+
+###############################################
+#Task 1.7.1 Use the regular expression variables to capture statistics on popularity for Trump, Biden, Republican, and Democrat mentions from the combined variables
+cnn_article_titles_combined_trumpmatches = len(regex.findall(Find_Trump,cnn_article_titles_combined))
+cnn_article_titles_combined_bidenmatches = len(regex.findall(Find_Biden,cnn_article_titles_combined))
+cnn_article_titles_combined_republicanmatches = len(regex.findall(Find_Republican,cnn_article_titles_combined))
+cnn_article_titles_combined_democratmatches = len(regex.findall(Find_Democrat,cnn_article_titles_combined))
+
+#Fox News
+fox_article_titles_combined_trumpmatches = len(regex.findall(Find_Trump,foxnews_article_titles_combined))
+fox_article_titles_combined_bidenmatches = len(regex.findall(Find_Biden,foxnews_article_titles_combined))
+fox_article_titles_combined_republicanmatches = len(regex.findall(Find_Republican,foxnews_article_titles_combined))
+fox_article_titles_combined_democratmatches = len(regex.findall(Find_Democrat,foxnews_article_titles_combined))
+
+###############################################
+
+#Repeat Tasks 1.4 through 1.7 for the article body
+
+#1.4.2 Parse out the body for articles with XPATH. 
+#CNN
+xp_cnn_article_body = "//div/p[@class='zn-body__paragraph speakable']/text()|//div[@class='zn-body__paragraph speakable']/text()|//div[@class='zn-body__paragraph']/text()"
+#Fox
+xp_fox_article_body = "//div[@class='article-body']/p/text()"
+
+###############################################
+#1.5.2 Convert the variables to string so Regular Expressions can be used.
+#CNN
+cnn_trumparticle1_body = str(tagtree_trump1.xpath(xp_cnn_article_body))
+cnn_trumparticle2_body = str(tagtree_trump2.xpath(xp_cnn_article_body))
+cnn_trumparticle3_body = str(tagtree_trump3.xpath(xp_cnn_article_body))
+cnn_bidenarticle1_body = str(tagtree_biden1.xpath(xp_cnn_article_body))
+cnn_bidenarticle2_body = str(tagtree_biden2.xpath(xp_cnn_article_body))
+cnn_bidenarticle3_body = str(tagtree_biden3.xpath(xp_cnn_article_body))
+
+#Fox
+fox_article1_body = str(tagtree_fox1.xpath(xp_fox_article_body))
+fox_article2_body = str(tagtree_fox2.xpath(xp_fox_article_body))
+fox_article3_body = str(tagtree_fox3.xpath(xp_fox_article_body))
+fox_article4_body = str(tagtree_fox4.xpath(xp_fox_article_body))
+fox_article5_body = str(tagtree_fox5.xpath(xp_fox_article_body))
+fox_article6_body = str(tagtree_fox6.xpath(xp_fox_article_body))
+
+###############################################
+#1.6.2 Combine the bodies to perform a regex count of each defined category
+#CNN
+cnn_article_body_combined = cnn_trumparticle1_body + cnn_trumparticle2_body + cnn_trumparticle3_body + cnn_bidenarticle1_body + cnn_bidenarticle2_body + cnn_bidenarticle3_body
+
+#Fox News
+foxnews_article_body_combined = fox_article1_body + fox_article2_body + fox_article3_body + fox_article4_body + fox_article5_body + fox_article6_body
+
+###############################################
+#1.7.2 Use Regular Expressions to capture statistics on popularity for Trump, Biden, Republican, and Democrat mentions
+#CNN
+cnn_article_body_combined_trumpmatches = len(regex.findall(Find_Trump,cnn_article_body_combined))
+cnn_article_body_combined_bidenmatches = len(regex.findall(Find_Biden,cnn_article_body_combined))
+cnn_article_body_combined_republicanmatches = len(regex.findall(Find_Republican,cnn_article_body_combined))
+cnn_article_body_combined_democratmatches = len(regex.findall(Find_Democrat,cnn_article_body_combined))
+
+#Fox
+fox_article_body_combined_trumpmatches = len(regex.findall(Find_Trump,foxnews_article_body_combined))
+fox_article_body_combined_bidenmatches = len(regex.findall(Find_Biden,foxnews_article_body_combined))
+fox_article_body_combined_republicanmatches = len(regex.findall(Find_Republican,foxnews_article_body_combined))
+fox_article_body_combined_democratmatches = len(regex.findall(Find_Democrat,foxnews_article_body_combined))
+
+###############################################
+#1.8 Create the data frame for articles containing the descriptive statistics compiled from the regular expression matches
+#CNN
+cnn_article_df = pd.DataFrame({
+                         'Source':"CNN_WebArticles",
+                         'trump_title_mentions':[cnn_article_titles_combined_trumpmatches],
+                         'trump_body_mentions':[cnn_article_body_combined_trumpmatches],
+                         'biden_title_mentions':[cnn_article_titles_combined_bidenmatches],
+                         'biden_body_mentions':[cnn_article_body_combined_bidenmatches],
+                         'republican_title_mentions':[cnn_article_titles_combined_republicanmatches],
+                         'republican_body_mentions':[cnn_article_body_combined_republicanmatches],
+                         'democrat_title_mentions':[cnn_article_titles_combined_democratmatches],
+                         'democrat_body_mentions':[cnn_article_body_combined_democratmatches],
+                         'TotalCount':CNN_article_rows
+                         })
+
+#cnn_article_df
+
+#Fox
+fox_article_df = pd.DataFrame({
+                         'Source':"FoxNews_WebArticles",
+                         'trump_title_mentions':[fox_article_titles_combined_trumpmatches],
+                         'trump_body_mentions':[fox_article_body_combined_trumpmatches],
+                         'biden_title_mentions':[fox_article_titles_combined_bidenmatches],
+                         'biden_body_mentions':[fox_article_body_combined_bidenmatches],
+                         'republican_title_mentions':[fox_article_titles_combined_republicanmatches],
+                         'republican_body_mentions':[fox_article_body_combined_republicanmatches],
+                         'democrat_title_mentions':[fox_article_titles_combined_democratmatches],
+                         'democrat_body_mentions':[fox_article_body_combined_democratmatches],
+                         'TotalCount':FOX_article_rows
+                         })
+#fox_article_df
+
+#############################################
+
+###################################################################
+#Task 2: Compiling data from Task 1 for Sentiment Analysis
+###################################################################
+#Task 2.1 Put the article bodies in a dataframe for sentiment analysis
+#CNN
+cnn_article_body_df = pd.DataFrame({'Source': 'CNN',
+                                    'Article Title': [cnn_trumparticle1_title, cnn_trumparticle2_title, cnn_trumparticle3_title, cnn_bidenarticle1_title, cnn_bidenarticle2_title, cnn_bidenarticle3_title],
+                                    'ArticleBody': [cnn_trumparticle1_body,cnn_trumparticle2_body,cnn_trumparticle3_body,cnn_bidenarticle1_body,cnn_bidenarticle2_body,cnn_bidenarticle3_body]
+                                    })
+
+#FOX
+fox_article_body_df = pd.DataFrame({'Source': 'FoxNews',
+                                    'Article Title': [foxnews_article1_title, foxnews_article2_title, foxnews_article3_title, foxnews_article4_title, foxnews_article5_title, foxnews_article6_title],
+                                    'ArticleBody': [fox_article1_body,fox_article2_body,fox_article3_body,fox_article4_body,fox_article5_body,fox_article6_body]
+                                    })
+
+
+#combine the article bodies from CNN and Fox
+frames = [cnn_article_body_df,fox_article_body_df]
+articlebodyfile = pd.concat(frames)
+os.getcwd()
+os.chdir(r'C:\Users\Sam Edison\source\repos\msis5193-pds1-2020fall-online\project-deliverable-2-sam_edison-chris_brady\data')
+#Create a CSV file that can be used in R or Python for Analysis
+articlebodyfile.to_csv('articlebodyfile.csv')
+
+###################################################################
+
+###################################################################
+#Task 3: Accessing Twitter Data (CNN and FOX NEWS twitter handles)
+###################################################################
+#Task 3.1 Setting up API key and access tokens
+#accessing twitter #Project: MSIS5193_ProjectSECB
+#use these api keys to gain access to twitter. These can be used for all twitter extractions.
+apikey = 'wMNoqiBrdwz5Tm8MMI9cvSfAR'
+apisecretkey = 'm7C3wYUWyUKSTgbHv8MdMc4MhnxjBKYf4rBeRAkVhW1344K3ME'
+#bearertoken = 'AAAAAAAAAAAAAAAAAAAAADheJAEAAAAACF9XMd2bYKfgT14EnFOdEjLIXU4%3DrudVDK4OAlhxazbO3z72gZ8U5eEfwF0XQPeoNqmccpzshvGScM'
+accesstok = '1296173968152567808-q1iwDcofAi3ToGPAlYeCmkHKNbt5X2'
+accesstoksec = 'gkuct7rr0d0Sr5hzHdNGyPv4DpxGrFtRY1Xaq9UxsFm73'
+auth = tweepy.OAuthHandler(apikey, apisecretkey)
+auth.set_access_token(accesstok, accesstoksec)
+
+#waits for twitter api limits to refresh before executing
+api = tweepy.API(auth, wait_on_rate_limit=True)
+
+###################################################################
+#Task 3.2 Setup variables for twitter handles and timeline
+username = "cnn"
+usernamefox = "foxnews"
+#Will pull tweets based on the range between start and end date
+startDate = datetime.datetime(2020, 10, 20, 0, 0, 0)
+endDate =   datetime.datetime(2020, 11, 3, 0, 0, 0)
+#full twitter link for CNN #h_ttps://twitter.com/search?q=from%3Acnnpolitics&src=typed_query
+#full twitter link for Fox News #h_ttps://twitter.com/search?q=from%3Afoxnewspolitics&src=typed_query
+
+###################################################################
+#Task 3.3 Compile the CNN tweets and load into a Dataframe
+tweets = []
+tmpTweets = api.user_timeline(username)
+for tweet in tmpTweets:
+    if tweet.created_at < endDate and tweet.created_at > startDate:
+        tweets.append(tweet)
+    if tweet.created_at < endDate and tweet.created_at > startDate:
+        tweets.append(tweet)
+
+while (tmpTweets[-1].created_at > startDate):
+    print("Last Tweet @", tmpTweets[-1].created_at, " - loading")
+    tmpTweets = api.user_timeline(username, max_id = tmpTweets[-1].id)
+    for tweet in tmpTweets:
+        if tweet.created_at < endDate and tweet.created_at > startDate:
+            tweets.append(tweet)
+
+cnn_twitter_df = []
+for tweet in tweets:
+    cnn_twitter_df.append(
+        {
+            'Source': 'CNN',
+            'ID':str(tweet.id),
+            'Date':str(tweet.created_at),
+            'Tweet':str(tweet.text)
+            }
+        )
+cnn_twitter_df = pd.DataFrame(cnn_twitter_df)
+
+###################################################################
+#Task 3.4 Compile the Fox tweets and load into a Dataframe
+tweets = []
+tmpTweets = api.user_timeline(usernamefox)
+for tweet in tmpTweets:
+    if tweet.created_at < endDate and tweet.created_at > startDate:
+        tweets.append(tweet)
+
+while (tmpTweets[-1].created_at > startDate):
+    print("Last Tweet @", tmpTweets[-1].created_at, " - loading")
+    tmpTweets = api.user_timeline(usernamefox, max_id = tmpTweets[-1].id)
+    for tweet in tmpTweets:
+        if tweet.created_at < endDate and tweet.created_at > startDate:
+            tweets.append(tweet)
+
+fox_twitter_df = []
+for tweet in tweets:
+    fox_twitter_df.append(
+        {
+            'Source': 'FOX',
+            'ID':str(tweet.id),
+            'Date':str(tweet.created_at),
+            'Tweet':str(tweet.text)
+            }
+        )
+fox_twitter_df = pd.DataFrame(fox_twitter_df)
+
+###################################################################
+#Task 3.5 Merge the twitter data frames and create a csv file
+frames2 = [cnn_twitter_df,fox_twitter_df]
+twitterfile = pd.concat(frames2)
+#os.getcwd()
+#os.chdir(r'C:\Users\Sam Edison\source\repos\msis5193-pds1-2020fall-online\project-deliverable-2-sam_edison-chris_brady\data')
+twitterfile.to_csv('twitterfile.csv')
+
+###################################################################
+#Task 3.6 Reload the newly created file and split the data frame. Then convert the tweets to string so REGEX can be used.
+twitter_data = pd.read_csv('twitterfile.csv', sep=',')
+#CNN Filter
+cnn_twitter_data = twitterfile[twitterfile.Source=='CNN']
+cnn_tweets_string = str(cnn_twitter_data['Tweet'])
+#FOX Filter
+fox_twitter_data = twitterfile[twitterfile.Source=='FOX']
+fox_tweets_string = str(fox_twitter_data['Tweet'])
+
+###################################################################
+#Task 3.7 Use REGEX to capture statistics on popularity for Trump, Biden, Republican, and Democrat mentions
+#CNN
+cnn_twitter_trumpmatches = len(regex.findall(Find_Trump,cnn_tweets_string))
+cnn_twitter_bidenmatches = len(regex.findall(Find_Biden,cnn_tweets_string))
+cnn_twitter_republicanmatches = len(regex.findall(Find_Republican,cnn_tweets_string))
+cnn_twitter_democratmatches = len(regex.findall(Find_Democrat,cnn_tweets_string))
+
+#FOX
+fox_twitter_trumpmatches = len(regex.findall(Find_Trump,fox_tweets_string))
+fox_twitter_bidenmatches = len(regex.findall(Find_Biden,fox_tweets_string))
+fox_twitter_republicanmatches = len(regex.findall(Find_Republican,fox_tweets_string))
+fox_twitter_democratmatches = len(regex.findall(Find_Democrat,fox_tweets_string))
+
+###################################################################
+#Task 3.8 Create a data frame to capture all mentions statistics in one place
+#CNN
+#Compile counts for mentions data
+CNN_twitter_df_count = len(cnn_twitter_df)
+
+cnn_twitter_df_mentions = pd.DataFrame({
+                         'Source':"CNN_Twitter",
+                         'trump_title_mentions':"NULL",
+                         'trump_body_mentions':[cnn_twitter_trumpmatches],
+                         'biden_title_mentions':"NULL",
+                         'biden_body_mentions':[cnn_twitter_bidenmatches],
+                         'republican_title_mentions':"NULL",
+                         'republican_body_mentions':[cnn_twitter_republicanmatches],
+                         'democrat_title_mentions':"NULL",
+                         'democrat_body_mentions':[cnn_twitter_democratmatches],
+                         'TotalCount':CNN_twitter_df_count
+                         })
+#cnn_twitter_df_mentions
+
+#FOX
+#Compile counts for mentions data
+#Compile counts for mentions data
+FOX_twitter_df_count = len(fox_twitter_df)
+
+fox_twitter_df_mentions = pd.DataFrame({
+                         'Source':"FOX_Twitter",
+                         'trump_title_mentions':"NULL",
+                         'trump_body_mentions':[fox_twitter_trumpmatches],
+                         'biden_title_mentions':"NULL",
+                         'biden_body_mentions':[fox_twitter_bidenmatches],
+                         'republican_title_mentions':"NULL",
+                         'republican_body_mentions':[fox_twitter_republicanmatches],
+                         'democrat_title_mentions':"NULL",
+                         'democrat_body_mentions':[fox_twitter_democratmatches],
+                         'TotalCount':FOX_twitter_df_count
+                         })
+
+#fox_twitter_df_mentions
+
+#Check the names of each column for the four data sources created previously
+cnn_article_df.dtypes
+fox_article_df.dtypes
+cnn_twitter_df_mentions.dtypes
+fox_twitter_df_mentions.dtypes
+cnn_article_df.columns
+fox_article_df.columns
+cnn_twitter_df_mentions.columns
+fox_twitter_df_mentions.columns
+
+###################################################################
+#Task 3.7 Merge the mentions statistics Data Frames here
+#use pandas to union the data frames together
+mentions_stats = pd.concat([cnn_article_df,fox_article_df,cnn_twitter_df_mentions,fox_twitter_df_mentions])
+mentions_stats
+
+#write file to validate and do a review of statistics
+#os.getcwd()
+#os.chdir(r'C:\Users\Sam Edison\source\repos\project-deliverable-2-sam_edison-chris_brady')
+mentions_stats.to_csv('mentions_stats.csv')
+
+###################################################################
