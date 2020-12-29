@@ -1,0 +1,24 @@
+""	"firstname"	"lastname"	"title"	"address"	"phone"	"email"	"additional_position"
+"1"	"Rick"	"Wilson"	"Professor and Head of Department of MSIS and W. Paul Miller Professor"	"449A Business Building"	"405-744-3551 "	"rick.wilson@okstate.edu"	"Head of Department of MSIS and W. Paul Miller Professor of Business"
+"2"	"Jim"	"Burkman"	"Associate Professor"	"306 Business Building"	"405-744-5142 "	"jim.burkman@okstate.edu"	NA
+"3"	"Bryan"	"Hammer"	"Assistant Professor"	"403 Business Building"	"405-744-6994 "	"bryan.hammer@okstate.edu"	NA
+"4"	"David"	"Biros"	"Associate Professor"	"442 Business Building"	"405-744-7156 "	"david.biros@okstate.edu"	NA
+"5"	"Ali"	"Amiri"	"Professor"	"338 Business Building"	"405-744-8639 "	"ali.amiri@okstate.edu"	NA
+"6"	"Ali"	"Bagheri"	"Visiting Assistant Professor"	"480 Business Building"	NA	"ali.bagheri@okstate.edu"	NA
+"7"	"Corey"	"Baham"	"Assistant Professor"	"427 Business Building"	"405-744-1818 "	"corey.baham@okstate.edu"	NA
+"8"	"Chenzhang"	"Bao"	"Assistant Professor"	"Office: 353 North Hall – "	NA	"chbao@okstate.edu"	NA
+"9"	"David"	"Biros"	"Associate Professor"	"442 Business Building"	"405-744-7156 "	"david.biros@okstate.edu"	NA
+"10"	"Jim"	"Burkman"	"Clinical Associate Professor"	"306 Business Building"	"405-744-5142 "	"jim.burkman@okstate.edu"	"MSIA Graduate Coordinator Science and Information Systems"
+"11"	"Dursun"	"Delen"	"Regents Professor"	"700 North Greenwood Ave., NH302"	"918-594-8283 "	"dursun.delen@okstate.edu"	"William S. Spears Chair in Business Administration; Patterson Foundation"
+"12"	"Fletcher"	"Glancy"	"Clinical Assistant Professor"	"440 Business Building"	"405-744-8649 "	"fletcher.glancy_iii@okstate.edu"	NA
+"13"	"Bryan"	"Hammer"	"Assistant Professor"	"403 Business Building"	"405-744-6994 "	"bryan.hammer@okstate.edu"	NA
+"14"	"JinKyu"	"Lee"	"Associate Professor"	"317 North Hall, 700 N. Greenwood"	"918-594-8254 "	"jinkyu.lee@okstate.edu"	NA
+"15"	"Andy"	"Luse"	"Associate Professor"	"414 Business Building"	"405-744-4049 "	"andyluse@okstate.edu"	NA
+"16"	"Fred"	"Menge"	"Lecturer"	"Room 2211, Main Hall"	"918-594-8154 "	"fred.menge@okstate.edu"	NA
+"17"	"Jeretta"	"Nord"	"Jeanine Rhea – Oklahoma International Women’s Forum Professor"	"366 Business Building"	"405-744-5091 "	"jeretta.nord@okstate.edu"	NA
+"18"	"Simon"	"Ringsmuth"	"Lecturer"	"301 POI Building"	"405-744-1000 "	"simon.ringsmuth@okstate.edu"	NA
+"19"	"Rathin"	"Sarathy"	"Professor"	"407 Business Building"	"405-744-8646 "	"rathin.sarathy@okstate.edu"	NA
+"20"	"Ramesh"	"Sharda"	"Regents Professor"	"370A Business Building"	"405-744-5064 "	"ramesh.sharda@okstate.edu"	"Vice Dean of the Watson Graduate School of , Chuck and Kim Watson Chair,"
+"21"	"Kim"	"Strom"	"Instructor"	"412 Business Building"	NA	"kim.strom@okstate.edu"	"Assistant Head of Department of MSIS"
+"22"	"Mark"	"Weiser"	"Professor"	"387 Business Building"	"405-744-9299 "	"weiser@okstate.edu"	"Director, Center for Telecommunications and Network Security Science and Information Systems"
+"23"	"Rick"	"Wilson"	"Professor and Head of Department of MSIS and W. Paul Miller Professor"	"449A Business Building"	"405-744-3551 "	"rick.wilson@okstate.edu"	"Head of Department of MSIS and W. Paul Miller Professor of Business"
