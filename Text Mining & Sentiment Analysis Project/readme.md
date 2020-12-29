@@ -6,6 +6,7 @@ Our mission is to identify instances of this media bias in hopes give awareness 
 Statement of Scope
 
 This study uses six web articles from each source, CNN and Fox News (12 articles total). Additionally, every tweet from the corresponding news broadcaster from October 20th, 2020 through November 2nd, 2020 is used. To reproduce this analysis would require the access to web articles, a twitter developer account, and Python.
+
 Project Objectives
 
 •	Objective 1: Review and compare the primary news stations to determine which would be best for analysis. 
