@@ -9,11 +9,18 @@ This study uses six web articles from each source, CNN and Fox News (12 articles
 
 Project Objectives
 
-•	Objective 1: Review and compare the primary news stations to determine which would be best for analysis. 
-•	Objective 2: Compile the data sources to be used for web scraping and other analysis.
-•	Objective 3: Perform web scraping on web articles and twitter accounts for each news media station.
-•	Objective 4: Use Regular Expressions to create a table for descriptive statistics that identifies mentions of each candidate or their party.
-•	Objective 5: Build a text mining process that identifies key words or phrases, in media articles, and then use sentiment analysis to indicate any potential bias.
-•	Objective 6:  Use sentiment rates to make a determination if political bias exists in individual media articles or twitter posts from the data gathered in Objective 2.
-•	Objective 7:  Create visualizations to present how the different media outlets compare when it comes to bias in reporting.
+Objective 1: 
+Review and compare the primary news stations to determine which would be best for analysis. 
+Objective 2: 
+Compile the data sources to be used for web scraping and other analysis.
+Objective 3: 
+Perform web scraping on web articles and twitter accounts for each news media station.
+Objective 4: 
+Use Regular Expressions to create a table for descriptive statistics that identifies mentions of each candidate or their party.
+Objective 5: 
+Build a text mining process that identifies key words or phrases, in media articles, and then use sentiment analysis to indicate any potential bias.
+Objective 6:  
+Use sentiment rates to make a determination if political bias exists in individual media articles or twitter posts from the data gathered in Objective 2.
+Objective 7:  
+Create visualizations to present how the different media outlets compare when it comes to bias in reporting.
 
