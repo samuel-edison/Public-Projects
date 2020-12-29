@@ -1,0 +1,696 @@
+#############################################
+#=============Read in Libraries=============#
+import pandas as pd
+import numpy as np
+import os
+import matplotlib.pyplot as plt
+# Code to show full column/row width as needed #
+################################################
+pd.set_option('display.max_columns', None)
+pd.set_option('display.max_rows', None)
+pd.set_option('display.max_colwidth', None)
+################################################
+#=============Print more Data=============#
+################################################
+
+###################################################################
+#Task 1: Pull in CSV files for analysis (3 total)
+###################################################################
+#Task 1.1 Import the CSV files
+#os.getcwd()
+os.chdir(r'C:\Users\Sam Edison\source\repos\msis5193-pds1-2020fall-online\project-deliverable-2-sam_edison-chris_brady\data')
+#Mentions Statistics file
+mentions_stats = pd.read_csv('mentions_stats.csv')
+#mentions_stats.columns
+#Article Body file
+article_body = pd.read_csv('articlebodyfile.csv')
+#article_body.columns
+#Twitter file
+twitter_body = pd.read_csv('twitterfile.csv')
+#twitter_body.columns
+###################################################################
+#Task 1.2 Compile descriptive statistics using the describe function and export to 1 file
+#create dataframes for each data source with descriptive stats
+mentions_descriptive_stats = mentions_stats.describe()
+article_body_descriptive_stats = article_body.describe()
+twitter_body_descriptive_stats = twitter_body.describe()
+#Create an excel writer variable
+writer = pd.ExcelWriter('descriptive_stats.xlsx', engine='xlsxwriter')
+#Write each descriptive stats dataframe to a separate sheet
+mentions_descriptive_stats.to_excel(writer, sheet_name='Mentions')
+article_body_descriptive_stats.to_excel(writer, sheet_name='Article_Body')
+twitter_body_descriptive_stats.to_excel(writer, sheet_name='Twitter_Body')
+writer.save()
+###################################################################
+#Task 2: Exploratory Analysis and Visualization on Mention Statistics
+###################################################################
+#Task 2.1 Filling NULLs with 0's
+mentions_stats = mentions_stats.fillna(value=0)
+###################################################################
+#Task 2.2 Renaming Columns to fit charts better
+mentions_stats = mentions_stats.rename(columns={"trump_title_mentions":"trump_title","trump_body_mentions":"trump_body",
+                               "biden_title_mentions":"biden_title","biden_body_mentions":"biden_body",
+                               "republican_title_mentions":"rep_title","republican_body_mentions":"rep_body",
+                               "democrat_title_mentions":"dem_title","democrat_body_mentions":"dem_body"})
+###################################################################
+#Task 2.3 Create a data frame for just the twitter records
+tweetsonly = mentions_stats[(mentions_stats.Source == 'CNN_Twitter') | (mentions_stats.Source == 'FOX_Twitter')]
+#Reduce data frame to just body mentions
+tweetsonly = tweetsonly[["Source","trump_body","biden_body","rep_body","dem_body","TotalCount"]]
+#Create new metrics for rates in percent: (Mention Count / Total)*100. Also round to two decimals.
+tweetsonly['trump_rate'] = round((tweetsonly.trump_body / tweetsonly.TotalCount)*100,2)
+tweetsonly['biden_rate'] = round((tweetsonly.biden_body / tweetsonly.TotalCount)*100,2)
+tweetsonly['rep_rate'] = round((tweetsonly.rep_body / tweetsonly.TotalCount)*100,2)
+tweetsonly['dem_rate'] = round((tweetsonly.dem_body / tweetsonly.TotalCount)*100,2)
+
+#Task 2.4 Visualization build for title mentions
+
+length = len(mentions_stats.Source)
+x_labels = mentions_stats.Source
+# Set plot parameters
+fig, ax = plt.subplots()
+width = 0.2 # width of bar
+x = np.arange(length)
+
+rects1 = ax.bar(x, mentions_stats.trump_title, width, color='#FF8F00', label='Trump')
+rects2 = ax.bar(x + width, mentions_stats.rep_title, width, color='r', label='Republican')
+rects3 = ax.bar(x + (2 * width), mentions_stats.biden_title, width, color='#00DAFF', label='Biden')
+rects4 = ax.bar(x + (3 * width), mentions_stats.dem_title, width, color='b', label='Democrat')
+
+ax.set_ylabel('Mentions')
+ax.set_ylim(0,10)
+ax.set_xticks(x + width + width/2)
+ax.set_xticklabels(x_labels)
+ax.set_xlabel('Source')
+ax.set_title('Title mentions by Candidate and Party')
+ax.legend()
+plt.grid(True, 'major', 'y', ls='--', lw=.5, c='k', alpha=.3)
+
+def autolabel(rects):
+    """Attach a text label above each bar in *rects*, displaying its height."""
+    for rect in rects:
+        height = rect.get_height()
+        ax.annotate('{}'.format(height),
+                    xy=(rect.get_x() + rect.get_width() / 2, height),
+                    xytext=(0, 3),  # 3 points vertical offset
+                    textcoords="offset points",
+                    ha='center', va='bottom')
+
+autolabel(rects1)
+autolabel(rects2)
+autolabel(rects3)
+autolabel(rects4)
+
+fig.tight_layout()
+plt.show()
+#############################################
+#Task 2.5 Visualization build for body mentions
+
+length = len(mentions_stats.Source)
+x_labels = mentions_stats.Source
+
+# Set plot parameters
+fig, ax = plt.subplots()
+width = 0.2 # width of bar
+x = np.arange(length)
+
+rects1 = ax.bar(x, mentions_stats.trump_body, width, color='#FF8F00', label='Trump')
+rects2 = ax.bar(x + width, mentions_stats.rep_body, width, color='r', label='Republican')
+rects3 = ax.bar(x + (2 * width), mentions_stats.biden_body, width, color='#00DAFF', label='Biden')
+rects4 = ax.bar(x + (3 * width), mentions_stats.dem_body, width, color='b', label='Democrat')
+
+ax.set_ylabel('Mentions')
+ax.set_ylim(0,520)
+ax.set_xticks(x + width + width/2)
+ax.set_xticklabels(x_labels)
+ax.set_xlabel('Source')
+ax.set_title('Body mentions by Candidate and Party')
+ax.legend()
+plt.grid(True, 'major', 'y', ls='--', lw=.5, c='k', alpha=.3)
+
+def autolabel(rects):
+    """Attach a text label above each bar in *rects*, displaying its height."""
+    for rect in rects:
+        height = rect.get_height()
+        ax.annotate('{}'.format(height),
+                    xy=(rect.get_x() + rect.get_width() / 2, height),
+                    xytext=(0, 3),  # 3 points vertical offset
+                    textcoords="offset points",
+                    ha='center', va='bottom')
+
+autolabel(rects1)
+autolabel(rects2)
+autolabel(rects3)
+autolabel(rects4)
+
+fig.tight_layout()
+plt.show()
+#############################################
+#Task 2.7 Visualization build for Total Tweets
+fig, ax = plt.subplots()    
+width = 0.75 # the width of the bars 
+ind = np.arange(len(tweetsonly.TotalCount))  # the x locations for the groups
+ax.barh(ind, tweetsonly.TotalCount, width, color="black")
+ax.set_yticks(ind+width/2)
+ax.set_yticklabels(tweetsonly.Source, minor=False)
+for i, v in enumerate(tweetsonly.TotalCount):
+    ax.text(v + 3, i + .25, str(v), color='gray')
+plt.title('Total Tweets per Twitter Account')
+plt.xlabel('Total Tweets')
+plt.ylabel('Source')
+#plt.show()
+plt.show()
+
+#############################################
+#Task 2.8 Visualization build for Twitter Mention Rate
+#Begin plotting
+length = len(tweetsonly.Source)
+x_labels = tweetsonly.Source
+
+# Set plot parameters
+fig, ax = plt.subplots()
+width = 0.2 # width of bar
+x = np.arange(length)
+
+rects1 = ax.bar(x, tweetsonly.trump_rate, width, color='#FF8F00', label='Trump')
+rects2 = ax.bar(x + width, tweetsonly.rep_rate, width, color='r', label='Republican')
+rects3 = ax.bar(x + (2 * width), tweetsonly.biden_rate, width, color='#00DAFF', label='Biden')
+rects4 = ax.bar(x + (3 * width), tweetsonly.dem_rate, width, color='b', label='Democrat')
+
+ax.set_ylabel('Mention Rate in %')
+ax.set_ylim(0,100)
+ax.set_xticks(x + width + width/2)
+ax.set_xticklabels(x_labels)
+ax.set_xlabel('Source')
+ax.set_title('Twitter Mention Rate by Candidate and Party')
+ax.legend()
+plt.grid(True, 'major', 'y', ls='--', lw=.5, c='k', alpha=.3)
+
+def autolabel(rects):
+    """Attach a text label above each bar in *rects*, displaying its height."""
+    for rect in rects:
+        height = rect.get_height()
+        ax.annotate('{}'.format(height),
+                    xy=(rect.get_x() + rect.get_width() / 2, height),
+                    xytext=(0, 3),  # 3 points vertical offset
+                    textcoords="offset points",
+                    ha='center', va='bottom')
+
+autolabel(rects1)
+autolabel(rects2)
+autolabel(rects3)
+autolabel(rects4)
+
+fig.tight_layout()
+plt.show()
+
+###################################################################
+#Task 3: Text Mining
+###################################################################
+#=============Read in Libraries=============#
+import nltk
+#nltk.download('stopwords')
+from nltk import word_tokenize, sent_tokenize
+from nltk.corpus import stopwords
+from nltk.stem import LancasterStemmer, WordNetLemmatizer, PorterStemmer
+from sklearn.feature_extraction.text import CountVectorizer
+#############################################
+#Task 3.1 Data Preparation for Article Body and TDM
+#Article Body
+#Create new dataframe
+article_body_mining = article_body
+#convert everything to lower case
+article_body_mining['ArticleBody'] = article_body_mining['ArticleBody'].apply(lambda x: " ".join(x.lower() for x in x.split()))
+#Remove numerical values and punctuation from the words with REGEX
+patterndigits = '[\\b[0-9]+\\b]|[xa0]'
+article_body_mining['ArticleBody'] = article_body_mining['ArticleBody'].str.replace(patterndigits,'')
+#Remove punctuations with REGEX
+patternpunc = '[^\w\s]'
+article_body_mining['ArticleBody'] = article_body_mining['ArticleBody'].str.replace(patternpunc,'')
+#Remove stop words using the library nltk
+stop = stopwords.words('english')
+article_body_mining['ArticleBody'] = article_body_mining['ArticleBody'].apply(lambda x: " ".join(x for x in x.split() if x not in stop))
+#Stem the words
+porstem = PorterStemmer()
+article_body_mining['ArticleBody'] = article_body_mining['ArticleBody'].apply(lambda x: " ".join([porstem.stem(word) for word in x.split()]))
+#Create the TDM
+from sklearn.feature_extraction.text import CountVectorizer
+vectorizer = CountVectorizer()
+article_bdy_tdm = pd.DataFrame(vectorizer.fit_transform(article_body_mining['ArticleBody']).toarray(), columns=vectorizer.get_feature_names())
+print(article_bdy_tdm.columns.tolist())
+#############################################
+#Task 3.2 Data Preparation for Twitter Body
+#create new data frame to work with
+twitter_body_prep = twitter_body
+#convert everything to lower case
+twitter_body_prep['Tweet'] = twitter_body['Tweet'].apply(lambda x: " ".join(x.lower() for x in x.split()))
+#Remove numerical values and punctuation from the words with REGEX
+patterndigits = '\\b[0-9]+\\b'
+twitter_body_prep['Tweet'] = twitter_body['Tweet'].str.replace(patterndigits,'')
+#Remove punctuations with REGEX
+patternpunc = '[^\w\s]'
+twitter_body_prep['Tweet'] = twitter_body['Tweet'].str.replace(patternpunc,'')
+#Remove stop words using the library nltk
+stop = stopwords.words('english')
+twitter_body_prep['Tweet'] = twitter_body['Tweet'].apply(lambda x: " ".join(x for x in x.split() if x not in stop))
+
+#Create new dataframe containing only tweets that have political keywords
+search_values = ['trump','biden','resident','vice-president','vice president','democrat','democratic','republican','left','right','conservative','liberal', 'election', 'presidential','debate','political','politic','politics']
+politicaltweets_body_mining = twitter_body_prep[twitter_body_prep.Tweet.str.contains('|'.join(search_values ))]
+#Check how many tweets remain for each Source
+politicaltweets_body_mining.Source.value_counts().plot(kind='barh', color="black")
+plt.title('Total Political Tweets per Twitter Account')
+plt.xlabel('Total Political Tweets')
+plt.ylabel('Source')
+#plt.show()
+#Create new dataframe containing only tweets pertaining to Trump
+trump_values = ['trump','president']
+trumptweets_body_mining = twitter_body[twitter_body.Tweet.str.contains('|'.join(trump_values ))]
+#Create new dataframe containing only tweets pertaining to Biden
+biden_values = ['biden','vice-president','vice president']
+bidentweets_body_mining = twitter_body[twitter_body.Tweet.str.contains('|'.join(biden_values))]
+#Create new dataframe containing only tweets pertaining to Republicans
+rep_values = ['republican','right','conservative']
+reptweets_body_mining = twitter_body[twitter_body.Tweet.str.contains('|'.join(rep_values ))]
+#Create new dataframe containing only tweets pertaining to Demcrats
+dem_values = ['democrat','democratic']
+demtweets_body_mining = twitter_body[twitter_body.Tweet.str.contains('|'.join(dem_values ))]
+
+#Stem the words
+porstem = PorterStemmer()
+politicaltweets_body_mining['Tweet'] = politicaltweets_body_mining['Tweet'].apply(lambda x: " ".join([porstem.stem(word) for word in x.split()]))
+trumptweets_body_mining['Tweet'] = trumptweets_body_mining['Tweet'].apply(lambda x: " ".join([porstem.stem(word) for word in x.split()]))
+bidentweets_body_mining['Tweet'] = bidentweets_body_mining['Tweet'].apply(lambda x: " ".join([porstem.stem(word) for word in x.split()]))
+reptweets_body_mining['Tweet'] = reptweets_body_mining['Tweet'].apply(lambda x: " ".join([porstem.stem(word) for word in x.split()]))
+demtweets_body_mining['Tweet'] = demtweets_body_mining['Tweet'].apply(lambda x: " ".join([porstem.stem(word) for word in x.split()]))
+
+#Create the TDM
+#vectorizer = CountVectorizer()
+#twitter_bdy_tdm = pd.DataFrame(vectorizer.fit_transform(politicaltweets_body_mining['Tweet']).toarray(), columns=vectorizer.get_feature_names())
+#print(twitter_bdy_tdm.columns.tolist())
+###################################################################
+#Task 4: Sentiment Analysis
+###################################################################
+#=============Read in Libraries=============#
+from nltk.sentiment.vader import SentimentIntensityAnalyzer
+import text2emotion as te
+import matplotlib.pyplot as plt
+import numpy as np
+from textblob import TextBlob
+from nltk.sentiment.vader import SentimentIntensityAnalyzer
+#import text2emotion as te
+#from textblob import TextBlob
+#############################################
+#4.1 Sentiment Analysis for Web Articles
+#Create the sentiment scores
+def polarity_value(review): 
+    return TextBlob(review).sentiment.polarity
+article_body_mining['sentiment_score'] = article_body_mining['ArticleBody'].apply(polarity_value)
+plt.hist(article_body_mining['sentiment_score'])
+plt.show()
+
+def  label_pos_neg(row):
+   if row['sentiment_score'] > 0 :
+      return 'Positive'
+   if row['sentiment_score'] < 0 :
+      return 'Negative'
+   if row['sentiment_score'] == 0 :
+      return 'Neutral'
+article_body_mining['pos_neg_neut'] = article_body_mining.apply (lambda row: label_pos_neg(row), axis=1)
+#Create visualizations
+#All Sources
+article_body_mining.pos_neg_neut.value_counts().plot(kind='pie', autopct='%1.0f%%', colors=["green", "red"])
+plt.title('Pie Chart for Web Article Sentiment Scores (%)')
+plt.xlabel('Sentiment')
+plt.ylabel('')
+plt.show()
+#Breakdown by Source
+source_sentiment = article_body_mining.groupby(['Source', 'pos_neg_neut']).pos_neg_neut.count().unstack()
+source_sentiment.plot(kind='barh', color=["red", "green"])
+plt.title('Web Article Sentiment Counts by Source')
+plt.xlabel('Sentiment Count')
+plt.ylabel('')
+plt.show()
+#############################################
+#4.2 Sentiment Analysis for Twitter Data
+def polarity_value(review):
+    return TextBlob(review).sentiment.polarity
+politicaltweets_body_mining['sentiment_score'] = politicaltweets_body_mining['Tweet'].apply(polarity_value)
+#plt.hist(politicaltweets_body_mining['sentiment_score'])
+#plt.show()
+
+def  label_pos_neg(row):
+   if row['sentiment_score'] > 0 :
+      return 'Positive'
+   if row['sentiment_score'] < 0 :
+      return 'Negative'
+   if row['sentiment_score'] == 0 :
+      return 'Neutral'
+politicaltweets_body_mining['pos_neg_neut'] = politicaltweets_body_mining.apply (lambda row: label_pos_neg(row), axis=1)
+#Create visualizations
+#All Sources
+politicaltweets_body_mining.pos_neg_neut.value_counts().plot(kind='pie', autopct='%1.0f%%', colors=["yellow", "green", "red"])
+plt.title('Twitter Sentiment Scores (%)')
+plt.xlabel('Sentiment')
+plt.ylabel('')
+plt.show()
+#Breakdown by Source
+source_sentiment = politicaltweets_body_mining.groupby(['Source', 'pos_neg_neut']).pos_neg_neut.count().unstack()
+source_sentiment.plot(kind='barh', color=["red", "yellow","green"])
+plt.title('Twitter Sentiment Counts by Source')
+plt.xlabel('Sentiment Count')
+plt.ylabel('')
+plt.show()
+
+#Add in Rates
+source_sentiment['totaltweets'] = source_sentiment['Negative']+source_sentiment['Neutral']+source_sentiment['Positive']
+source_sentiment['neg_rate'] = round((source_sentiment.Negative / source_sentiment.totaltweets)*100,2)
+source_sentiment['neut_rate'] = round((source_sentiment.Neutral / source_sentiment.totaltweets)*100,2)
+source_sentiment['pos_rate'] = round((source_sentiment.Positive / source_sentiment.totaltweets)*100,2)
+
+#Begin plotting for Rates
+length = len(source_sentiment.totaltweets)
+x_labels = ['CNN','Fox']#source_sentiment.totaltweets
+
+# Set plot parameters
+fig, ax = plt.subplots()
+width = 0.2 # width of bar
+x = np.arange(length)
+
+rects1 = ax.bar(x, source_sentiment.neg_rate, width, color='r', label='Negative')
+rects2 = ax.bar(x + width, source_sentiment.neut_rate, width, color="yellow", label='Neutral')
+rects3 = ax.bar(x + (2 * width), source_sentiment.pos_rate, width, color='g', label='Positive')
+
+
+ax.set_ylabel('Sentiment Rate in %')
+ax.set_ylim(0,100)
+ax.set_xticks(x + width + width/2)
+ax.set_xticklabels(x_labels)
+ax.set_xlabel('Source')
+ax.set_title('Twitter Sentiment Rate by Source')
+ax.legend()
+plt.grid(True, 'major', 'y', ls='--', lw=.5, c='k', alpha=.3)
+
+def autolabel(rects):
+    """Attach a text label above each bar in *rects*, displaying its height."""
+    for rect in rects:
+        height = rect.get_height()
+        ax.annotate('{}'.format(height),
+                    xy=(rect.get_x() + rect.get_width() / 2, height),
+                    xytext=(0, 3),  # 3 points vertical offset
+                    textcoords="offset points",
+                    ha='center', va='bottom')
+
+autolabel(rects1)
+autolabel(rects2)
+autolabel(rects3)
+
+
+fig.tight_layout()
+plt.show()
+
+
+#############################################
+#4.3 Sentiment Analysis for Twitter Data referencing Trump
+def polarity_value(review):
+    return TextBlob(review).sentiment.polarity
+trumptweets_body_mining['sentiment_score'] = trumptweets_body_mining['Tweet'].apply(polarity_value)
+
+def  label_pos_neg(row):
+   if row['sentiment_score'] > 0 :
+      return 'Positive'
+   if row['sentiment_score'] < 0 :
+      return 'Negative'
+   if row['sentiment_score'] == 0 :
+      return 'Neutral'
+trumptweets_body_mining['pos_neg_neut'] = trumptweets_body_mining.apply (lambda row: label_pos_neg(row), axis=1)
+#Create visualizations
+#Create visualizations
+#All Sources
+#Breakdown by Source
+source_sentiment1 = trumptweets_body_mining.groupby(['Source', 'pos_neg_neut']).pos_neg_neut.count().unstack()
+trumptweets_body_mining.pos_neg_neut.value_counts().plot(kind='pie', autopct='%1.0f%%', colors=["yellow", "green", "red"])
+plt.title('Twitter Sentiment Scores for Trump (%)')
+plt.xlabel('Sentiment')
+plt.ylabel('')
+plt.show()
+
+#Add in Rates
+source_sentiment1['totaltweets'] = source_sentiment1['Negative']+source_sentiment1['Neutral']+source_sentiment1['Positive']
+source_sentiment1['neg_rate'] = round((source_sentiment1.Negative / source_sentiment1.totaltweets)*100,2)
+source_sentiment1['neut_rate'] = round((source_sentiment1.Neutral / source_sentiment1.totaltweets)*100,2)
+source_sentiment1['pos_rate'] = round((source_sentiment1.Positive / source_sentiment1.totaltweets)*100,2)
+
+#Begin plotting for Rates
+length = len(source_sentiment1.totaltweets)
+x_labels = ['CNN','Fox']#source_sentiment.totaltweets
+
+# Set plot parameters
+fig, ax = plt.subplots()
+width = 0.2 # width of bar
+x = np.arange(length)
+
+rects1 = ax.bar(x, source_sentiment1.neg_rate, width, color='r', label='Negative')
+rects2 = ax.bar(x + width, source_sentiment1.neut_rate, width, color="yellow", label='Neutral')
+rects3 = ax.bar(x + (2 * width), source_sentiment1.pos_rate, width, color='g', label='Positive')
+
+
+ax.set_ylabel('Sentiment Rate in %')
+ax.set_ylim(0,100)
+ax.set_xticks(x + width + width/2)
+ax.set_xticklabels(x_labels)
+ax.set_xlabel('Source')
+ax.set_title('Twitter Sentiment Rate for Trump by Source')
+ax.legend()
+plt.grid(True, 'major', 'y', ls='--', lw=.5, c='k', alpha=.3)
+
+def autolabel(rects):
+    """Attach a text label above each bar in *rects*, displaying its height."""
+    for rect in rects:
+        height = rect.get_height()
+        ax.annotate('{}'.format(height),
+                    xy=(rect.get_x() + rect.get_width() / 2, height),
+                    xytext=(0, 3),  # 3 points vertical offset
+                    textcoords="offset points",
+                    ha='center', va='bottom')
+
+autolabel(rects1)
+autolabel(rects2)
+autolabel(rects3)
+
+
+fig.tight_layout()
+plt.show()
+#############################################
+#4.4 Sentiment Analysis for Twitter Data referencing Biden
+def polarity_value(review):
+    return TextBlob(review).sentiment.polarity
+bidentweets_body_mining['sentiment_score'] = bidentweets_body_mining['Tweet'].apply(polarity_value)
+
+def  label_pos_neg(row):
+   if row['sentiment_score'] > 0 :
+      return 'Positive'
+   if row['sentiment_score'] < 0 :
+      return 'Negative'
+   if row['sentiment_score'] == 0 :
+      return 'Neutral'
+bidentweets_body_mining['pos_neg_neut'] = bidentweets_body_mining.apply (lambda row: label_pos_neg(row), axis=1)
+#Create visualizations
+#Create visualizations
+#source sentiment 
+source_sentiment2 = bidentweets_body_mining.groupby(['Source', 'pos_neg_neut']).pos_neg_neut.count().unstack()
+#All Sources
+bidentweets_body_mining.pos_neg_neut.value_counts().plot(kind='pie', autopct='%1.0f%%', colors=["yellow", "green", "red"])
+plt.title('Twitter Sentiment Scores for Biden (%)')
+plt.xlabel('Sentiment')
+plt.ylabel('')
+plt.show()
+
+#Add in Rates
+source_sentiment2['totaltweets'] = source_sentiment2['Negative']+source_sentiment2['Neutral']+source_sentiment2['Positive']
+source_sentiment2['neg_rate'] = round((source_sentiment2.Negative / source_sentiment2.totaltweets)*100,2)
+source_sentiment2['neut_rate'] = round((source_sentiment2.Neutral / source_sentiment2.totaltweets)*100,2)
+source_sentiment2['pos_rate'] = round((source_sentiment2.Positive / source_sentiment2.totaltweets)*100,2)
+
+#Begin plotting for Rates
+length = len(source_sentiment2.totaltweets)
+x_labels = ['CNN','Fox']#source_sentiment.totaltweets
+
+# Set plot parameters
+fig, ax = plt.subplots()
+width = 0.2 # width of bar
+x = np.arange(length)
+
+rects1 = ax.bar(x, source_sentiment2.neg_rate, width, color='r', label='Negative')
+rects2 = ax.bar(x + width, source_sentiment2.neut_rate, width, color="yellow", label='Neutral')
+rects3 = ax.bar(x + (2 * width), source_sentiment2.pos_rate, width, color='g', label='Positive')
+
+
+ax.set_ylabel('Sentiment Rate in %')
+ax.set_ylim(0,100)
+ax.set_xticks(x + width + width/2)
+ax.set_xticklabels(x_labels)
+ax.set_xlabel('Source')
+ax.set_title('Twitter Sentiment Rate for Biden by Source')
+ax.legend()
+plt.grid(True, 'major', 'y', ls='--', lw=.5, c='k', alpha=.3)
+
+def autolabel(rects):
+    """Attach a text label above each bar in *rects*, displaying its height."""
+    for rect in rects:
+        height = rect.get_height()
+        ax.annotate('{}'.format(height),
+                    xy=(rect.get_x() + rect.get_width() / 2, height),
+                    xytext=(0, 3),  # 3 points vertical offset
+                    textcoords="offset points",
+                    ha='center', va='bottom')
+
+autolabel(rects1)
+autolabel(rects2)
+autolabel(rects3)
+
+
+fig.tight_layout()
+plt.show()
+#############################################
+#4.5 Sentiment Analysis for Twitter Data referencing Republicans
+def polarity_value(review):
+    return TextBlob(review).sentiment.polarity
+reptweets_body_mining['sentiment_score'] = reptweets_body_mining['Tweet'].apply(polarity_value)
+
+def  label_pos_neg(row):
+   if row['sentiment_score'] > 0 :
+      return 'Positive'
+   if row['sentiment_score'] < 0 :
+      return 'Negative'
+   if row['sentiment_score'] == 0 :
+      return 'Neutral'
+reptweets_body_mining['pos_neg_neut'] = reptweets_body_mining.apply (lambda row: label_pos_neg(row), axis=1)
+#Create visualizations
+#Create visualizations
+#source sentiment 
+source_sentiment3 = reptweets_body_mining.groupby(['Source', 'pos_neg_neut']).pos_neg_neut.count().unstack()
+#All Sources
+reptweets_body_mining.pos_neg_neut.value_counts().plot(kind='pie', autopct='%1.0f%%', colors=["green","yellow", "red"])
+plt.title('Twitter Sentiment Scores for Republicans (%)')
+plt.xlabel('Sentiment')
+plt.ylabel('')
+plt.show()
+
+#Add in Rates
+source_sentiment3['totaltweets'] = source_sentiment3['Negative']+source_sentiment3['Neutral']+source_sentiment3['Positive']
+source_sentiment3['neg_rate'] = round((source_sentiment3.Negative / source_sentiment3.totaltweets)*100,2)
+source_sentiment3['neut_rate'] = round((source_sentiment3.Neutral / source_sentiment3.totaltweets)*100,2)
+source_sentiment3['pos_rate'] = round((source_sentiment3.Positive / source_sentiment3.totaltweets)*100,2)
+
+#Begin plotting for Rates
+length = len(source_sentiment3.totaltweets)
+x_labels = ['CNN','Fox']#source_sentiment.totaltweets
+
+# Set plot parameters
+fig, ax = plt.subplots()
+width = 0.2 # width of bar
+x = np.arange(length)
+
+rects1 = ax.bar(x, source_sentiment3.neg_rate, width, color='r', label='Negative')
+rects2 = ax.bar(x + width, source_sentiment3.neut_rate, width, color="yellow", label='Neutral')
+rects3 = ax.bar(x + (2 * width), source_sentiment3.pos_rate, width, color='g', label='Positive')
+
+
+ax.set_ylabel('Sentiment Rate in %')
+ax.set_ylim(0,100)
+ax.set_xticks(x + width + width/2)
+ax.set_xticklabels(x_labels)
+ax.set_xlabel('Source')
+ax.set_title('Twitter Sentiment Rate for Republicans by Source')
+ax.legend()
+plt.grid(True, 'major', 'y', ls='--', lw=.5, c='k', alpha=.3)
+
+def autolabel(rects):
+    """Attach a text label above each bar in *rects*, displaying its height."""
+    for rect in rects:
+        height = rect.get_height()
+        ax.annotate('{}'.format(height),
+                    xy=(rect.get_x() + rect.get_width() / 2, height),
+                    xytext=(0, 3),  # 3 points vertical offset
+                    textcoords="offset points",
+                    ha='center', va='bottom')
+
+autolabel(rects1)
+autolabel(rects2)
+autolabel(rects3)
+
+
+fig.tight_layout()
+plt.show()
+#############################################
+#4.6 Sentiment Analysis for Twitter Data referencing Democrats
+def polarity_value(review):
+    return TextBlob(review).sentiment.polarity
+demtweets_body_mining['sentiment_score'] = demtweets_body_mining['Tweet'].apply(polarity_value)
+
+def  label_pos_neg(row):
+   if row['sentiment_score'] > 0 :
+      return 'Positive'
+   if row['sentiment_score'] < 0 :
+      return 'Negative'
+   if row['sentiment_score'] == 0 :
+      return 'Neutral'
+demtweets_body_mining['pos_neg_neut'] = demtweets_body_mining.apply (lambda row: label_pos_neg(row), axis=1)
+#Create visualizations
+#Create visualizations
+#source sentiment 
+source_sentiment4 = demtweets_body_mining.groupby(['Source', 'pos_neg_neut']).pos_neg_neut.count().unstack()
+#All Sources
+demtweets_body_mining.pos_neg_neut.value_counts().plot(kind='pie', autopct='%1.0f%%', colors=["yellow", "green", "red"])
+plt.title('Twitter Sentiment Scores for Democrats (%)')
+plt.xlabel('Sentiment')
+plt.ylabel('')
+plt.show()
+
+#Add in Rates
+source_sentiment4['totaltweets'] = source_sentiment4['Negative']+source_sentiment4['Neutral']+source_sentiment4['Positive']
+source_sentiment4['neg_rate'] = round((source_sentiment4.Negative / source_sentiment4.totaltweets)*100,2)
+source_sentiment4['neut_rate'] = round((source_sentiment4.Neutral / source_sentiment4.totaltweets)*100,2)
+source_sentiment4['pos_rate'] = round((source_sentiment4.Positive / source_sentiment4.totaltweets)*100,2)
+
+#Begin plotting for Rates
+length = len(source_sentiment4.totaltweets)
+x_labels = ['CNN','Fox']#source_sentiment.totaltweets
+
+# Set plot parameters
+fig, ax = plt.subplots()
+width = 0.2 # width of bar
+x = np.arange(length)
+
+rects1 = ax.bar(x, source_sentiment4.neg_rate, width, color='r', label='Negative')
+rects2 = ax.bar(x + width, source_sentiment4.neut_rate, width, color="yellow", label='Neutral')
+rects3 = ax.bar(x + (2 * width), source_sentiment4.pos_rate, width, color='g', label='Positive')
+
+
+ax.set_ylabel('Sentiment Rate in %')
+ax.set_ylim(0,100)
+ax.set_xticks(x + width + width/2)
+ax.set_xticklabels(x_labels)
+ax.set_xlabel('Source')
+ax.set_title('Twitter Sentiment Rate for Democrats by Source')
+ax.legend()
+plt.grid(True, 'major', 'y', ls='--', lw=.5, c='k', alpha=.3)
+
+def autolabel(rects):
+    """Attach a text label above each bar in *rects*, displaying its height."""
+    for rect in rects:
+        height = rect.get_height()
+        ax.annotate('{}'.format(height),
+                    xy=(rect.get_x() + rect.get_width() / 2, height),
+                    xytext=(0, 3),  # 3 points vertical offset
+                    textcoords="offset points",
+                    ha='center', va='bottom')
+
+autolabel(rects1)
+autolabel(rects2)
+autolabel(rects3)
+
+
+fig.tight_layout()
+plt.show()
