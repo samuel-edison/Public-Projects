@@ -1,1 +1,1 @@
-
+This project was created as a part of the Business Analytics Course I completed in Fall 2020 which allowed for an entry into the 2021 SAS Symposium Competition. While I worked with others on this project, I played a key role in defining the topic of the project, the business logic, and modeling the results.
