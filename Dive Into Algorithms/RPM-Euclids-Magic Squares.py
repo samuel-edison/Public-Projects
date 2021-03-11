@@ -61,3 +61,52 @@ def verifysquare(square):
     return(len(list(set(flattened))) == 1)
 
 verifysquare([[4,9,2],[3,5,7],[8,1,6]]) #loushu square
+
+#Kurushima's Algorithm pg.24
+## works only for magic squares of odd dimensions, meaning it works for any nxn squre if n is odd.
+n = 7
+#we do not know what numbers to put in the square so fill it with entries equal to float('nan') as a placeholder
+square = [[float('nan') for i in range(0,n)] for j in range(0,n)]
+print(square)
+#write function to output in a more readable way
+def printsquare(square):
+    labels = ['['+str(x)+']' for x in range(0,len(square))]
+    format_row = "{:>6" * (len(labels) +1)
+    print(format_row.format("", *labels))
+    for label, row in zip(labels, square):
+        print(format_row.format(label, *row))
+
+import math
+#indices of central entry
+center_i = math.floor(n/2)
+center_j = math.floor(n/2)
+#central five squares population
+square[center_i][center_j] = int((n**2 +1)/2)
+square[center_i + 1][center_j] = 1
+square[center_i - 1][center_j] = n**2
+square[center_i][center_j + 1] = n**2 + 1 - n
+square[center_i][center_j - 1] = n
+
+#specifying the three rules
+## The purpose of Kurushima's algorithm is to fill in the remaining nan entries according to these rules
+def rule1(x,n,upright):
+    return((x+((-1)**upright) * n)%n**2) # ** =exponentiation and % = Modulus
+
+print(rule1(1,3,True))
+
+def rule2(x,n,upleft):
+    return((x + ((-1)**upleft))%n**2)
+
+def rule3(x,n,upleft):
+    return((x + ((-1)**upleft * (-n + 1)))%n**2)
+
+#filling in the rest of the square
+center_i = math.floor(n/2)
+center_j = math.floor(n/2)
+
+import random
+entry_i = center_i
+entry_j = center_j
+where_we_can_go = ['up_left','up_right','down_left','down_right']
+where_to_go = random.choice(where_we_can_go)
+
